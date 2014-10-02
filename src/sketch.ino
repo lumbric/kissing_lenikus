@@ -8,24 +8,25 @@
 ///
 // auta mporeis na alakseis
 // kai meta upload
-int start = 45; // a value between 0 and 180
-int end_pos = 165; // must be greater than start
+int start    = 65;      // a value between 0 and 180
+int end_pos  = 165;   // must be greater than start
 int speed_milli = 3;
 int pause  = 2  * 1000;
 int pause_front  = 0.8  * 1000;
-int MIN_KISSING_DISTANCE = 120;  // in cm
-int NUMBER_KISSES = 3;
+int MIN_KISSING_DISTANCE = 50;  // in cm
+int NUMBER_KISSES = 1;
 
 // Ultra sound distance sensor
 int MAX_DISTANCE = 300; // sensore cannot measure more
 int MIN_DISTANCE = 0;   // sensor cannot measure closer distances
-
+int NUM_STABLE   = 10;  // will measure often too increase stability
 
 #define ECHO_PIN    10 // Echo Pin
 #define TRIG_PIN    11 // Trigger Pin
 #define SERVO_PIN   9
 
 #define BUTTON_PIN  8
+#define POTI_PIN    A0
 
 // ---------
 
@@ -45,15 +46,33 @@ void setup() {
 
 
 void loop() {
-    if ((digitalRead(BUTTON_PIN) == LOW) ||
-       get_distance() <= MIN_KISSING_DISTANCE) {
-        Serial.println("Kissing...");
+    if (digitalRead(BUTTON_PIN) == LOW)  {
         kiss();
-        Serial.println("Kissing done.");
+    }
+    else {
+        int distance = get_distance_stable();
+        Serial.print("Distance ");
+        Serial.println(distance);
+        if (distance <= MIN_KISSING_DISTANCE && distance > 0) {
+            kiss();
+        }
+    }
+
+    // Debug mode
+    // hold button until kissed
+    if (digitalRead(BUTTON_PIN) == LOW) {
+        while (true) {
+            int pos = map(analogRead(POTI_PIN) , 0, 1023, 0, 180);
+            servo.write(pos);
+            Serial.print("Servo position: ");
+            Serial.println(pos);
+            delay(1000);
+        }
     }
 }
 
 void kiss() {
+    Serial.println("Kissing...");
     for (int i=0; i < NUMBER_KISSES; i++) {
         for(pos = start ; pos < end_pos; pos += 1) {
             servo.write(pos);
@@ -66,7 +85,27 @@ void kiss() {
         }
         delay(pause);
     }
+    Serial.println("Kissing done.");
 }
+
+void turn(int pos, int speed_delay) {
+
+}
+
+int get_distance_stable() {
+    // delay to avoid interference with servo
+    delay(50);
+
+    int max_dist = 0;
+    for (int i = 0; i < NUM_STABLE; i++) {
+        int distance = get_distance();
+        if (distance > max_dist)
+            max_dist = distance;
+    }
+    return max_dist;
+}
+
+
 /*
  HC-SR04 Ping distance sensor:
  VCC to arduino 5v 
