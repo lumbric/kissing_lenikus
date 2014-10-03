@@ -41,6 +41,7 @@ void setup() {
     pinMode(ECHO_PIN, INPUT);
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     servo.attach(SERVO_PIN);
+    servo.write(SERVO_POS_BACK);
 }
 
 
