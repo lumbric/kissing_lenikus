@@ -10,7 +10,7 @@
 // kai meta upload
 int SERVO_POS_BACK    = 65;          // a value between 0 and 180
 int SERVO_POS_FRONT   = 165;         // must be greater than SERVO_POS_BACK
-int SERVO_DELAY       = 3;           // increase to make servo slower, in millisecs
+int SERVO_DELAY       = 3;           // increase to make servo slower, in ms
 int KISS_LENGTH       = 0.8 * 1000;  // delay front, in millisecs
 int PAUSE_BETWEEN     = 2 * 1000;    // pause between two kisses
 int NUMBER_KISSES     = 1;
@@ -18,7 +18,8 @@ int NUMBER_KISSES     = 1;
 // Ultra sound distance sensor
 int MAX_DISTANCE         = 300;      // sensore cannot measure more
 int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
-int NUM_STABLE           = 10;       // will measure often too increase stability
+int NUM_STABLE           = 10;       // will measure often too increase 
+                                     //     stability
 int MIN_KISSING_DISTANCE = 50;       // in cm
 
 #define ECHO_PIN    10 // Echo Pin
@@ -28,12 +29,10 @@ int MIN_KISSING_DISTANCE = 50;       // in cm
 #define BUTTON_PIN  8
 #define POTI_PIN    A0
 
-// ---------
+// ---------------------------------------------------------------------------
 
 
 Servo servo;
-
-
 int pos = 0;
 
 void setup() {
