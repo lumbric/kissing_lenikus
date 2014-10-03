@@ -8,18 +8,18 @@
 ///
 // auta mporeis na alakseis
 // kai meta upload
-int start    = 65;      // a value between 0 and 180
-int end_pos  = 165;   // must be greater than start
-int speed_milli = 3;
-int pause  = 2  * 1000;
-int pause_front  = 0.8  * 1000;
-int MIN_KISSING_DISTANCE = 50;  // in cm
-int NUMBER_KISSES = 1;
+int SERVO_POS_BACK    = 65;          // a value between 0 and 180
+int SERVO_POS_FRONT   = 165;         // must be greater than SERVO_POS_BACK
+int SERVO_DELAY       = 3;           // increase to make servo slower, in millisecs
+int KISS_LENGTH       = 0.8 * 1000;  // delay front, in millisecs
+int PAUSE_BETWEEN     = 2 * 1000;    // pause between two kisses
+int NUMBER_KISSES     = 1;
 
 // Ultra sound distance sensor
-int MAX_DISTANCE = 300; // sensore cannot measure more
-int MIN_DISTANCE = 0;   // sensor cannot measure closer distances
-int NUM_STABLE   = 10;  // will measure often too increase stability
+int MAX_DISTANCE         = 300;      // sensore cannot measure more
+int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
+int NUM_STABLE           = 10;       // will measure often too increase stability
+int MIN_KISSING_DISTANCE = 50;       // in cm
 
 #define ECHO_PIN    10 // Echo Pin
 #define TRIG_PIN    11 // Trigger Pin
@@ -74,16 +74,16 @@ void loop() {
 void kiss() {
     Serial.println("Kissing...");
     for (int i=0; i < NUMBER_KISSES; i++) {
-        for(pos = start ; pos < end_pos; pos += 1) {
+        for(pos = SERVO_POS_BACK ; pos < SERVO_POS_FRONT; pos += 1) {
             servo.write(pos);
-            delay(speed_milli);
+            delay(SERVO_DELAY);
         }
-        delay(pause_front);
-        for(pos = end_pos; pos>=start +1; pos-=1) {
+        delay(KISS_LENGTH);
+        for(pos = SERVO_POS_FRONT; pos>=SERVO_POS_BACK +1; pos-=1) {
             servo.write(pos);
-            delay(speed_milli);
+            delay(SERVO_DELAY);
         }
-        delay(pause);
+        delay(PAUSE_BETWEEN);
     }
     Serial.println("Kissing done.");
 }
