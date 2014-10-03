@@ -57,18 +57,6 @@ void loop() {
             kiss();
         }
     }
-
-    // Debug mode
-    // hold button until kissed
-    if (digitalRead(BUTTON_PIN) == LOW) {
-        while (true) {
-            int pos = map(analogRead(POTI_PIN) , 0, 1023, 0, 180);
-            servo.write(pos);
-            Serial.print("Servo position: ");
-            Serial.println(pos);
-            delay(1000);
-        }
-    }
 }
 
 void kiss() {
