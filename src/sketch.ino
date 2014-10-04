@@ -9,8 +9,8 @@
 #include <Servo.h>
 
 // Auta mporeis na alakseis,  kai meta patas upload
-int SERVO_POS_BACK    = 70;          // a value between 0 and 180
-int SERVO_POS_FRONT   = 155;         // must be greater than SERVO_POS_BACK
+int SERVO_POS_BACK    = 25;          // a value between 0 and 180
+int SERVO_POS_FRONT   = 145;         // must be greater than SERVO_POS_BACK
 int SERVO_DELAY       = 3;           // increase to make servo slower, in ms
 int KISS_LENGTH       = 0.8 * 1000;  // delay front, in millisecs
 int PAUSE_BETWEEN     = 2 * 1000;    // pause between two kisses
@@ -21,7 +21,7 @@ int MAX_DISTANCE         = 300;      // sensore cannot measure more
 int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
 int NUM_STABLE           = 10;       // will measure often too increase 
                                      //     stability
-int MIN_KISSING_DISTANCE = 50;       // in cm
+int MIN_KISSING_DISTANCE = 70;      // in cm
 
 #define ECHO_PIN    10 // Echo Pin
 #define TRIG_PIN    11 // Trigger Pin
@@ -86,6 +86,10 @@ void turn(int pos, int speed_delay) {
 int get_distance_stable() {
     // delay to avoid interference with servo
     delay(50);
+    /*static int last_distance = 0;*/
+    /*int distance = 0.3 * last_distance + 0.7 * get_distance();*/
+    /*last_distance = distance;*/
+    /*return distance;*/
 
     int max_dist = 0;
     for (int i = 0; i < NUM_STABLE; i++) {
