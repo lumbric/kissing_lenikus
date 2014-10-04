@@ -1,13 +1,14 @@
-// Sweep
-// by BARRAGAN <http://barraganstudio.com>
-// This example code is in the public domain.
+// Kissing Lenikus
+//
+//  Based on:
+//    Sweep
+//    by BARRAGAN <http://barraganstudio.com>
+//    This example code is in the public domain.
 
 #include <Arduino.h>
 #include <Servo.h>
 
-///
-// auta mporeis na alakseis
-// kai meta upload
+// Auta mporeis na alakseis,  kai meta patas upload
 int SERVO_POS_BACK    = 70;          // a value between 0 and 180
 int SERVO_POS_FRONT   = 155;         // must be greater than SERVO_POS_BACK
 int SERVO_DELAY       = 3;           // increase to make servo slower, in ms
@@ -47,6 +48,7 @@ void setup() {
 
 void loop() {
     if (digitalRead(BUTTON_PIN) == LOW)  {
+        Serial.println("Kiss triggered by button");
         kiss();
     }
     else {
@@ -54,6 +56,7 @@ void loop() {
         Serial.print("Distance ");
         Serial.println(distance);
         if (distance <= MIN_KISSING_DISTANCE && distance > 0) {
+            Serial.println("Kiss triggered by distance");
             kiss();
         }
     }
