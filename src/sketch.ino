@@ -1,6 +1,6 @@
 // Kissing Lenikus
 //
-//  Based on:
+//  Based on:   (based on? well not much left of original code...)
 //    Sweep
 //    by BARRAGAN <http://barraganstudio.com>
 //    This example code is in the public domain.
@@ -9,19 +9,24 @@
 #include <Servo.h>
 
 // Auta mporeis na alakseis,  kai meta patas upload
-int SERVO_POS_BACK    = 25;          // a value between 0 and 180
-int SERVO_POS_FRONT   = 145;         // must be greater than SERVO_POS_BACK
-int SERVO_DELAY       = 3;           // increase to make servo slower, in ms
-int KISS_LENGTH       = 0.8 * 1000;  // delay front, in millisecs
-int PAUSE_BETWEEN     = 2 * 1000;    // pause between two kisses
-int NUMBER_KISSES     = 1;
+int SERVO_POS_BACK             = 25;          // a value between 0 and 180
+int SERVO_POS_FRONT            = 145;         // must be greater than SERVO_POS_BACK
+int SERVO_DELAY                = 3;           // increase to make servo slower, in ms
+int KISS_LENGTH                = 0.8 * 1000;  // delay front, in millisecs
+int PAUSE_BETWEEN              = 2 * 1000;    // pause between two kisses
+int NUMBER_KISSES              = 3;           // used only for manual trigger via button
+unsigned long SERVO_IDLE_MS    = 7000L;       // servo goes idle after X seconds
+                                              // this might increase lifetime
+                                              // of servo, since we cut VCC
+                                              // using a powerful MOSFET
 
 // Ultra sound distance sensor
 int MAX_DISTANCE         = 300;      // sensore cannot measure more
 int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
-int NUM_STABLE           = 10;       // will measure often too increase 
-                                     //     stability
-int MIN_KISSING_DISTANCE = 70;      // in cm
+int DIST_TIMEOUT_MS      = 20;       // timeout for ultrasound ping
+int NUM_STABLE           = 10;       // will measure often too increase stability
+int MIN_KISSING_DISTANCE = 80;       // in cm
+
 
 #define ECHO_PIN    10 // Echo Pin
 #define TRIG_PIN    11 // Trigger Pin
@@ -36,72 +41,71 @@ int MIN_KISSING_DISTANCE = 70;      // in cm
 
 Servo servo;
 int pos = 0;
+unsigned long last_kiss = 0;
 
 void setup() {
     Serial.begin (9600);
     pinMode(TRIG_PIN, OUTPUT);
+    digitalWrite(TRIG_PIN, LOW);
     pinMode(ECHO_PIN, INPUT);
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     servo.attach(SERVO_PIN);
     servo.write(SERVO_POS_BACK);
     pinMode(SERVO_OFF, OUTPUT);
+    digitalWrite(SERVO_OFF, LOW);
 }
 
 
 void loop() {
     if (digitalRead(BUTTON_PIN) == LOW)  {
         Serial.println("Kiss triggered by button");
-        kiss();
+        for (int i = 0; i < NUMBER_KISSES; i++)
+            kiss();
     }
     else {
         int distance = get_distance_stable();
-        Serial.print("Distance ");
-        Serial.println(distance);
         if (distance <= MIN_KISSING_DISTANCE && distance > 0) {
             Serial.println("Kiss triggered by distance");
             kiss();
         }
+    }
+
+    // FIXME need to detect overflow of last_kiss
+    if (millis() - last_kiss > SERVO_IDLE_MS) {
+        digitalWrite(SERVO_OFF, LOW);
+        Serial.println("Switching off servo --> IDLE mode");
     }
 }
 
 void kiss() {
     digitalWrite(SERVO_OFF, HIGH);
     Serial.println("Kissing...");
-    for (int i=0; i < NUMBER_KISSES; i++) {
-        for(pos = SERVO_POS_BACK ; pos < SERVO_POS_FRONT; pos += 1) {
-            servo.write(pos);
-            delay(SERVO_DELAY);
-        }
-        delay(KISS_LENGTH);
-        for(pos = SERVO_POS_FRONT; pos>=SERVO_POS_BACK +1; pos-=1) {
-            servo.write(pos);
-            delay(SERVO_DELAY);
-        }
-        delay(PAUSE_BETWEEN);
+    for(pos = SERVO_POS_BACK ; pos < SERVO_POS_FRONT; pos += 1) {
+        servo.write(pos);
+        delay(SERVO_DELAY);
     }
-    digitalWrite(SERVO_OFF, LOW);
+    delay(KISS_LENGTH);
+    for(pos = SERVO_POS_FRONT; pos >= SERVO_POS_BACK + 1; pos-=1) {
+        servo.write(pos);
+        delay(SERVO_DELAY);
+    }
+    delay(PAUSE_BETWEEN);
+
+    last_kiss = millis();
     Serial.println("Kissing done.");
 }
 
-void turn(int pos, int speed_delay) {
-
-}
-
 int get_distance_stable() {
-    // delay to avoid interference with servo
-    delay(50);
-    /*static int last_distance = 0;*/
-    /*int distance = 0.3 * last_distance + 0.7 * get_distance();*/
-    /*last_distance = distance;*/
-    /*return distance;*/
-
-    int max_dist = 0;
     for (int i = 0; i < NUM_STABLE; i++) {
         int distance = get_distance();
-        if (distance > max_dist)
-            max_dist = distance;
+        if (distance > 0)
+            return distance;
+
+        delay(50);
     }
-    return max_dist;
+
+    // still no valid distance, assuming out of range
+    return -1;
 }
 
 
@@ -118,21 +122,18 @@ int get_distance_stable() {
  on 10 Nov 2012.
  */
 int get_distance() {
-    long duration, distance;
-
     /* The following TRIG_PIN/ECHO_PIN cycle is used to determine the
     distance of the nearest object by bouncing soundwaves off of it. */
-    digitalWrite(TRIG_PIN, LOW);
-    delayMicroseconds(2);
-
     digitalWrite(TRIG_PIN, HIGH);
     delayMicroseconds(10);
-
     digitalWrite(TRIG_PIN, LOW);
-    duration = pulseIn(ECHO_PIN, HIGH);
+    unsigned long duration = pulseIn(ECHO_PIN, HIGH, DIST_TIMEOUT_MS * 1000UL);
 
     // Calculate the distance (in cm) based on the speed of sound.
-    distance = duration/58.2;
+    int distance = (float)duration/58.2;
+
+    Serial.print("Distance: ");
+    Serial.println(distance);
 
     if (distance >= MAX_DISTANCE || distance <= MIN_DISTANCE) {
         return -1;
@@ -140,7 +141,4 @@ int get_distance() {
     else {
         return distance;
     }
-
-    //Delay 50ms before next reading.
-    delay(50);
 }
