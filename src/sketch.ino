@@ -9,8 +9,8 @@
 #include <Servo.h>
 
 // Auta mporeis na alakseis,  kai meta patas upload
-int SERVO_POS_BACK             = 25;          // a value between 0 and 180
-int SERVO_POS_FRONT            = 145;         // must be greater than SERVO_POS_BACK
+int SERVO_POS_BACK             = 15;          // a value between 0 and 180
+int SERVO_POS_FRONT            = 75;         // must be greater than SERVO_POS_BACK
 int SERVO_DELAY                = 3;           // increase to make servo slower, in ms
 int KISS_LENGTH                = 0.8 * 1000;  // delay front, in millisecs
 int PAUSE_BETWEEN              = 2 * 1000;    // pause between two kisses
