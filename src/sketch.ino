@@ -32,6 +32,7 @@ int MIN_KISSING_DISTANCE = 80;       // in cm
 #define TRIG_PIN    11 // Trigger Pin
 #define SERVO_PIN   9
 #define SERVO_OFF   12
+#define LED_PIN     13  // lights up when kissing
 
 #define BUTTON_PIN  8
 #define POTI_PIN    A0
@@ -51,6 +52,8 @@ void setup() {
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     servo.attach(SERVO_PIN);
     servo.write(SERVO_POS_BACK);
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, LOW);
     pinMode(SERVO_OFF, OUTPUT);
     digitalWrite(SERVO_OFF, LOW);
 }
@@ -79,6 +82,7 @@ void loop() {
 
 void kiss() {
     digitalWrite(SERVO_OFF, HIGH);
+    digitalWrite(LED_PIN, HIGH);
     Serial.println("Kissing...");
     for(pos = SERVO_POS_BACK ; pos < SERVO_POS_FRONT; pos += 1) {
         servo.write(pos);
@@ -91,6 +95,7 @@ void kiss() {
     }
     delay(PAUSE_BETWEEN);
 
+    digitalWrite(LED_PIN, LOW);
     last_kiss = millis();
     Serial.println("Kissing done.");
 }
