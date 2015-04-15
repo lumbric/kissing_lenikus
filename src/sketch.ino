@@ -24,9 +24,8 @@ unsigned long SERVO_IDLE_MS    = 7000L;       // servo goes idle after X seconds
 int MAX_DISTANCE         = 300;      // sensore cannot measure more
 int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
 int DIST_TIMEOUT_MS      = 20;       // timeout for ultrasound ping
-int NUM_STABLE           = 2;       // will measure often too increase stability
-int MIN_KISSING_DISTANCE = 226;       // in cm
-int MAX_KISSING_DISTANCE = 229;       // in cm
+int NUM_STABLE           = 2;        // will measure often too increase stability
+int DIST_FROM_INIT       = 2;        // in cm
 
 
 #define ECHO_PIN    10 // Echo Pin
@@ -44,6 +43,7 @@ int MAX_KISSING_DISTANCE = 229;       // in cm
 Servo servo;
 int pos = 0;
 unsigned long last_kiss = 0;
+int init_distance;
 
 void setup() {
     Serial.begin (9600);
@@ -57,6 +57,11 @@ void setup() {
     digitalWrite(LED_PIN, LOW);
     pinMode(SERVO_OFF, OUTPUT);
     digitalWrite(SERVO_OFF, LOW);
+
+    delay(2000);
+    Serial.println("Measuring inital distance..");
+    init_distance = get_distance_stable();
+    Serial.println(init_distance);
 }
 
 
@@ -68,8 +73,10 @@ void loop() {
     }
     else {
         int distance = get_distance_stable();
-        if (distance < MIN_KISSING_DISTANCE || distance > MAX_KISSING_DISTANCE) {
+        if (abs(distance - init_distance) > DIST_FROM_INIT) {
             Serial.println("Kiss triggered by distance");
+            Serial.print("Initial distance was: ");
+            Serial.println(init_distance);
             kiss();
         }
     }
