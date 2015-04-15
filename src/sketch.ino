@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <Servo.h>
+#include <EEPROM.h>
 
 // Auta mporeis na alakseis,  kai meta patas upload
 int SERVO_POS_BACK             = 15;          // a value between 0 and 180
@@ -38,12 +39,17 @@ int MAX_KISSING_DISTANCE = 229;       // in cm
 #define BUTTON_PIN  8
 #define POTI_PIN    A0
 
+
+#define EEPROM_MIN_VAL   0
+#define EEPROM_MAX_VAL   sizeof(int)
 // ---------------------------------------------------------------------------
 
 
 Servo servo;
 int pos = 0;
 unsigned long last_kiss = 0;
+
+int max_val, min_val;
 
 void setup() {
     Serial.begin (9600);
@@ -57,6 +63,20 @@ void setup() {
     digitalWrite(LED_PIN, LOW);
     pinMode(SERVO_OFF, OUTPUT);
     digitalWrite(SERVO_OFF, LOW);
+    
+    // read previous max/min values from EEPROM and print them
+    // this is useful for debugging errors not occurring with power via USB
+    // connected to computer
+    Serial.println("Start.");
+    delay(5000);
+    EEPROM.get(EEPROM_MIN_VAL, min_val);
+    EEPROM.get(EEPROM_MAX_VAL, max_val);
+    Serial.print("Previous min_val: ");
+    Serial.println(min_val);
+    Serial.print("Previous max_val: ");
+    Serial.println(max_val);
+    max_val = -100;  // -inf
+    min_val = 1000;  // inf
 }
 
 
@@ -71,6 +91,14 @@ void loop() {
         if (distance < MIN_KISSING_DISTANCE || distance > MAX_KISSING_DISTANCE) {
             Serial.println("Kiss triggered by distance");
             kiss();
+        }
+        if (distance < min_val) {
+            EEPROM.put(EEPROM_MIN_VAL, distance);
+            min_val = distance;
+        }
+        if (distance > max_val) {
+            EEPROM.put(EEPROM_MAX_VAL, distance);
+            max_val = distance;
         }
     }
 
