@@ -94,6 +94,8 @@ void kiss() {
         servo.write(pos);
         delay(SERVO_DELAY);
     }
+    Serial.print("Sleeping PAUSE_BETWEEN=");
+    Serial.println(PAUSE_BETWEEN);
     delay(PAUSE_BETWEEN);
 
     digitalWrite(LED_PIN, LOW);
