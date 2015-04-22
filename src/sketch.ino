@@ -43,6 +43,8 @@ int DIST_FROM_INIT       = 2;        // in cm
 Servo servo;
 int pos = 0;
 unsigned long last_kiss = 0;
+unsigned long last_init = 0;
+unsigned kiss_counter = 0;
 int init_distance;
 
 void setup() {
@@ -66,6 +68,8 @@ void set_init_distance() {
     delay(2000);
     init_distance = get_distance_stable();
     Serial.println(init_distance);
+    last_init = millis();
+    kiss_counter = 0;
 }
 
 
@@ -86,10 +90,24 @@ void loop() {
         }
     }
 
-    // FIXME need to detect overflow of last_kiss
+    // overflow of last_kiss does not matter
     if (millis() - last_kiss > SERVO_IDLE_MS) {
         digitalWrite(SERVO_OFF, LOW);
         Serial.println("Switching off servo --> IDLE mode");
+    }
+
+    // recalibration from time to time might safe everything
+    // forget about overflow, doesn't matter
+    if (millis() - last_init > 3600000UL) {// 1 hour
+        // shutdown if more than 60 kisses
+        if (kiss_counter > 60) {
+            while(1) {
+                Serial.println("emergency shuttdown! kisses: ");
+                Serial.print(kiss_counter);
+                delay(2000);
+            }
+        }
+        set_init_distance();
     }
 }
 
@@ -113,10 +131,11 @@ void kiss() {
     digitalWrite(LED_PIN, LOW);
     last_kiss = millis();
     Serial.println("Kissing done.");
+    kiss_counter++;
 }
 
 int get_distance_stable() {
-    // measure until stable
+    // measure until stable, might get stuck here if never stable!
     Serial.println("get_distance_stable");
     int distance1 = -2;
     int distance2 = -2;
