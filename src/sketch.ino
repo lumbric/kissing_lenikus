@@ -13,7 +13,7 @@ int SERVO_POS_BACK             = 15;          // a value between 0 and 180
 int SERVO_POS_FRONT            = 75;          // must be greater than SERVO_POS_BACK
 int SERVO_DELAY                = 3;           // increase to make servo slower, in ms
 int KISS_LENGTH                = 0.8 * 1000;  // delay front, in millisecs
-unsigned long PAUSE_BETWEEN    = 17 * 1000UL; // pause between two kisses
+unsigned long PAUSE_BETWEEN    = 1 * 1000UL; // pause between two kisses
 int NUMBER_KISSES              = 3;           // used only for manual trigger via button
 unsigned long SERVO_IDLE_MS    = 7000L;       // servo goes idle after X seconds
                                               // this might increase lifetime
@@ -58,8 +58,12 @@ void setup() {
     pinMode(SERVO_OFF, OUTPUT);
     digitalWrite(SERVO_OFF, LOW);
 
-    delay(2000);
+    set_init_distance();
+}
+
+void set_init_distance() {
     Serial.print("Measuring inital distance=");
+    delay(2000);
     init_distance = get_distance_stable();
     Serial.println(init_distance);
 }
@@ -72,7 +76,8 @@ void loop() {
             kiss();
     }
     else {
-        int distance = get_distance_stable();
+        delay(500);
+        int distance = get_distance();
         if (abs(distance - init_distance) > DIST_FROM_INIT) {
             Serial.println("Kiss triggered by distance");
             Serial.print("Initial distance was: ");
@@ -111,12 +116,26 @@ void kiss() {
 }
 
 int get_distance_stable() {
-    for (int i = 0; i < NUM_STABLE; i++) {
-        int distance = get_distance();
-        if (distance > 0)
-            return distance;
+    // measure until stable
+    Serial.println("get_distance_stable");
+    int distance1 = -2;
+    int distance2 = -2;
+    int distance3 = -2;
+    while(1) {
+        distance3 = distance2;
+        distance2 = distance1;
+        delay(100);
+        distance1 = get_distance();
+        if (distance1 == distance2 && distance1 == distance2 && distance3)
+            return distance1;
 
-        delay(50);
+        Serial.print("Distance not stable: ");
+        Serial.print(distance1);
+        Serial.print(" ");
+        Serial.print(distance2);
+        Serial.print(" ");
+        Serial.println(distance3);
+        delay(300);
     }
 
     // still no valid distance, assuming out of range
