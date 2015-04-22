@@ -25,7 +25,7 @@ int MAX_DISTANCE         = 300;      // sensore cannot measure more
 int MIN_DISTANCE         = 0;        // sensor cannot measure closer distances
 int DIST_TIMEOUT_MS      = 20;       // timeout for ultrasound ping
 int NUM_STABLE           = 2;        // will measure often too increase stability
-int DIST_FROM_INIT       = 2;        // in cm
+int DIST_FROM_INIT       = 5;        // in cm
 
 
 #define ECHO_PIN    10 // Echo Pin
