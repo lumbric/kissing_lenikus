@@ -59,7 +59,7 @@ void setup() {
     digitalWrite(SERVO_OFF, LOW);
 
     delay(2000);
-    Serial.println("Measuring inital distance..");
+    Serial.print("Measuring inital distance=");
     init_distance = get_distance_stable();
     Serial.println(init_distance);
 }
